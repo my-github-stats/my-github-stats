@@ -1,0 +1,32 @@
+<html>
+    <head>
+
+    </head>
+    <body>
+        <div id="app">
+            <input v-model="user"/>
+            <button v-on:click="fetch">Get Stats</button>
+            <div v-if="resultsLoaded">
+                <hr>
+                <h5>Stats for {{ user }}</h5>
+                Stars: {{ stars }}
+            </div>
+        </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                resultsLoaded: false,
+                user: ''
+            },
+            methods: {
+                fetch () {
+                    axios.get(`http://localhost:3000/stats/${this.user}`).then(console.log);
+                }
+            }
+        })
+    </script>
+</html>
