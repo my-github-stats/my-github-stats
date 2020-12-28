@@ -4,12 +4,15 @@
     </head>
     <body>
         <div id="app">
-            <input v-model="user"/>
-            <button v-on:click="fetch">Get Stats</button>
+            <input v-model="userSearch"/>
+            <button v-on:click="fetch" :disabled="loading">{{ buttonContent }}</button>
             <div v-if="resultsLoaded">
                 <hr>
-                <h5>Stats for {{ user }}</h5>
-                Stars: {{ stars }}
+                <h2>Stats for {{ user }}</h2>
+                Stars: <b>{{ stars }}</b><br>
+                Forks: <b>{{ forks }}</b><br>
+                Issues: <b>{{ issues }}</b><br>
+                Releases: <b>{{ releases }}</b><br>
             </div>
         </div>
     </body>
@@ -20,11 +23,31 @@
             el: '#app',
             data: {
                 resultsLoaded: false,
-                user: ''
+                userSearch: '',
+                user: null,
+                stars: 0,
+                forks: 0,
+                issues: 0,
+                releases: 0,
+                loading: false
+            },
+            computed: {
+                buttonContent () {
+                    return this.loading ? 'Loading...' : 'Get Stats';
+                }
             },
             methods: {
                 fetch () {
-                    axios.get(`https://my-gh-stats.androz2091.fr/stats/${this.user}`).then(console.log);
+                    this.loading = true;
+                    axios.get(`https://my-gh-stats.androz2091.fr/stats/${this.userSearch}`).then((res) => {
+                        this.user = this.userSearch;
+                        this.loading = false;
+                        this.resultsLoaded = true;
+                        this.stars = res.data.data.repos.edges.map((e) => e.node.stargazers.totalCount).reduce((p, c) => p + c);
+                        this.forks = res.data.data.repos.edges.map((e) => e.node.forks.totalCount).reduce((p, c) => p + c);
+                        this.issues = res.data.data.repos.edges.map((e) => e.node.issues.totalCount).reduce((p, c) => p + c);
+                        this.releases = res.data.data.repos.edges.map((e) => e.node.releases.totalCount).reduce((p, c) => p + c);
+                    });
                 }
             }
         })
