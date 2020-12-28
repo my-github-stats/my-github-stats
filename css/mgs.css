@@ -1,0 +1,45 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body, html {
+    height: 100%;
+}
+
+#app {
+    min-height: 100%;
+    position: relative;
+    padding-bottom: 100px;
+}
+
+.footer-text {
+    box-sizing: border-box !important;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    min-height: 0%;
+    border-radius: 0%;
+}
+
+.no-text-align {
+    text-align: initial;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.paper.center {
+    display: block;
+}
+
+input {
+    width: 100%;
+}

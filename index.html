@@ -1,23 +1,100 @@
 <html>
     <head>
-
+        <link rel="stylesheet" href="css/skeuos.css" />
+        <link rel="stylesheet" href="css/simple-grid.css" />
+        <link rel="stylesheet" href="css/mgs.css" />
+        <title>My GitHub Stats</title>
     </head>
     <body>
         <div id="app">
-            <input v-model="userSearch"/>
-            <button v-on:click="fetch" :disabled="loading">{{ buttonContent }}</button>
-            <div v-if="resultsLoaded">
-                <hr>
-                <h2>Stats for {{ user }}</h2>
-                Stars: <b>{{ stars }}</b><br>
-                Forks: <b>{{ forks }}</b><br>
-                Issues: <b>{{ issues }}</b><br>
-                Releases: <b>{{ releases }}</b><br>
+            <div class="container">
+                <h1 style="text-align: center;">My GitHub Stats</h1>
+                <div class="paper">
+                    <div class="row center">
+                        <div class="col-8 no-text-align">
+                            <input v-model="userSearch" type="text" placeholder="GitHub username" />
+                        </div>
+                        <div class="col-4">
+                            <button v-on:click="fetch" :disabled="loading" :class="getBtnClass">{{ buttonContent }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container" v-if="resultsLoaded">
+                <div class="paper">
+                    <small>Stats loaded in {{ loadSec }}s</small>
+                    <div class="row center">
+                        <h2>Stats for <b>{{ user }}</b></h2>
+                    </div>
+                    <div class="row">
+                        <h3 style="margin-left: 30px;"><b>User stats</b> - Who and what type of user is {{ user }} on GitHub ?</h3>
+                        <div class="col-3">
+                            <div class="paper center">
+                                <b>{{ followers }}</b> followers <br/>
+                                <i data-feather="user-plus"></i>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="paper center">
+                                <b>{{ languageCount }}</b> languages <br/>
+                                <i data-feather="compass"></i>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="paper center">
+                                <b>{{ pr }}</b> PR <br/>
+                                <i data-feather="git-pull-request"></i>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="paper center">
+                                <b>{{ comments }}</b> com. <br/>
+                                <i data-feather="message-square"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <h3 style="margin-left: 30px;"><b>Projects stats</b> - What's the impact of {{ user }}'s projects on GitHub ?</h3>
+                        <div class="col-3">
+                            <div class="paper center">
+                                <b>{{ stars }}</b> stars <br/>
+                                <i data-feather="star"></i>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="paper center">
+                                <b>{{ forks }}</b> forks <br/>
+                                <i data-feather="git-merge"></i>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="paper center">
+                                <b>{{ issues }}</b> issues <br/>
+                                <i data-feather="help-circle"></i>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="paper center">
+                                <b>{{ releases }}</b> releases <br/>
+                                <i data-feather="git-commit"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="paper footer">
+                <p class="footer-text">
+                    Made with <i data-feather="heart"></i> by Androz2091 using Vue.js and GitHub GraphQL API.
+                </p>
             </div>
         </div>
     </body>
+    <script src="js/feather.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script>
+        feather.replace()
+    </script>
     <script>
         new Vue({
             el: '#app',
@@ -25,28 +102,50 @@
                 resultsLoaded: false,
                 userSearch: '',
                 user: null,
+                followers: 0,
+                languageCount: 0,
+                pr: 0,
+                comments: 0,
                 stars: 0,
                 forks: 0,
                 issues: 0,
                 releases: 0,
-                loading: false
+                loading: false,
+                loadSec: 0
             },
             computed: {
                 buttonContent () {
                     return this.loading ? 'Loading...' : 'Get Stats';
+                },
+                getBtnClass () {
+                    return this.loading ? 'active' : '';
+                },
+                getBtnDisabled () {
+                    return this.loading
                 }
+            },
+            beforeCreate () {
+                document.getElementById('get-button').focus();
             },
             methods: {
                 fetch () {
                     this.loading = true;
+                    const fetchAt = Date.now();
                     axios.get(`https://my-gh-stats.androz2091.fr/stats/${this.userSearch}`).then((res) => {
-                        this.user = this.userSearch;
+                        this.user = res.data.data.user.login;
                         this.loading = false;
                         this.resultsLoaded = true;
                         this.stars = res.data.data.repos.edges.map((e) => e.node.stargazers.totalCount).reduce((p, c) => p + c);
                         this.forks = res.data.data.repos.edges.map((e) => e.node.forks.totalCount).reduce((p, c) => p + c);
                         this.issues = res.data.data.repos.edges.map((e) => e.node.issues.totalCount).reduce((p, c) => p + c);
                         this.releases = res.data.data.repos.edges.map((e) => e.node.releases.totalCount).reduce((p, c) => p + c);
+                        this.followers = res.data.data.user.followers.totalCount;
+                        this.languageCount = [...new Set(res.data.data.repos.edges.map((e) => e.node.primaryLanguage ? e.node.primaryLanguage.name : null))].length;
+                        this.pr = res.data.data.user.pullRequests.totalCount;
+                        this.comments = res.data.data.user.issueComments.totalCount
+                                        + res.data.data.user.gistComments.totalCount
+                                        + res.data.data.user.commitComments.totalCount;
+                        this.loadSec = ((Date.now() - fetchAt) / 1000).toFixed(2);
                     });
                 }
             }
