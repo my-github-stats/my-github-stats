@@ -8,3 +8,7 @@ function getQueryVariable(variable) {
         }
     }
 }
+
+function getPathFromUrl(url) {
+    return url.split("?")[0];
+}

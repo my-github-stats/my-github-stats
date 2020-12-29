@@ -134,6 +134,14 @@
                     this.fetch();
                 }
             },
+            watch: {
+                userSearch: function (oldValue, newValue) {
+                    const newURL = window.location.protocol + "//" + window.location.host + window.location.pathname + (this.userSearch ? `?username=${this.userSearch}` : '');
+                    window.history.pushState({
+                        path: newURL
+                    }, '', newURL);
+                }
+            },
             methods: {
                 fetch () {
                     this.loading = true;
