@@ -92,6 +92,7 @@
         </div>
     </body>
     <script src="js/feather.js"></script>
+    <script src="js/mgs.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <script>
@@ -126,8 +127,12 @@
                     return this.loading
                 }
             },
-            beforeCreate () {
-                document.getElementById('get-button').focus();
+            mounted () {
+                const username = getQueryVariable('username');
+                if (username) {
+                    this.userSearch = username;
+                    this.fetch();
+                }
             },
             methods: {
                 fetch () {
