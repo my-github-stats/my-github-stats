@@ -12,3 +12,9 @@ function getQueryVariable(variable) {
 function getPathFromUrl(url) {
     return url.split("?")[0];
 }
+
+function getAPIURL () {
+    const dev = true;
+    const url = dev ? 'http://localhost:3666/stats' : 'https://my-gh-stats.androz2091.fr/stats';
+    return url;
+}

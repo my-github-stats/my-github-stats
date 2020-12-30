@@ -81,6 +81,12 @@
                                 <i data-feather="git-commit"></i>
                             </div>
                         </div>
+                        <div class="col-6" v-if="showNpmDownloadCount">
+                            <div class="paper center">
+                                <b>{{ npmDownloadCount}}</b> downloads on <a href="https://npmjs.com">NPM</a><br/>
+                                <i data-feather="download"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -113,6 +119,7 @@
                 forks: 0,
                 issues: 0,
                 releases: 0,
+                npmDownloadCount: 0,
                 loading: false,
                 loadSec: 0
             },
@@ -122,6 +129,9 @@
                 },
                 getBtnClass () {
                     return this.loading ? 'active' : '';
+                },
+                showNpmDownloadCount () {
+                    return this.npmDownloadCount > 0;
                 }
             },
             mounted () {
@@ -143,20 +153,22 @@
                 fetch () {
                     this.loading = true;
                     const fetchAt = Date.now();
-                    axios.get(`https://my-gh-stats.androz2091.fr/stats/${this.userSearch}`).then((res) => {
+                    axios.get(`${getAPIURL()}/${this.userSearch}`).then((res) => {
                         this.user = res.data.data.user.login;
                         this.loading = false;
                         this.resultsLoaded = true;
-                        this.stars = res.data.data.repos.edges.map((e) => e.node.stargazers.totalCount).reduce((p, c) => p + c);
-                        this.forks = res.data.data.repos.edges.map((e) => e.node.forks.totalCount).reduce((p, c) => p + c);
-                        this.issues = res.data.data.repos.edges.map((e) => e.node.issues.totalCount).reduce((p, c) => p + c);
-                        this.releases = res.data.data.repos.edges.map((e) => e.node.releases.totalCount).reduce((p, c) => p + c);
-                        this.followers = res.data.data.user.followers.totalCount;
+                        const printInt = (int) => int.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                        this.stars = printInt(res.data.data.repos.edges.map((e) => e.node.stargazers.totalCount).reduce((p, c) => p + c));
+                        this.forks = printInt(res.data.data.repos.edges.map((e) => e.node.forks.totalCount).reduce((p, c) => p + c));
+                        this.issues = printInt(res.data.data.repos.edges.map((e) => e.node.issues.totalCount).reduce((p, c) => p + c));
+                        this.releases =printInt(res.data.data.repos.edges.map((e) => e.node.releases.totalCount).reduce((p, c) => p + c));
+                        this.followers = printInt(res.data.data.user.followers.totalCount);
                         this.languageCount = [...new Set(res.data.data.repos.edges.map((e) => e.node.primaryLanguage ? e.node.primaryLanguage.name : null))].length;
-                        this.pr = res.data.data.user.pullRequests.totalCount;
-                        this.comments = res.data.data.user.issueComments.totalCount
+                        this.pr = printInt(res.data.data.user.pullRequests.totalCount);
+                        this.comments = printInt(res.data.data.user.issueComments.totalCount
                                         + res.data.data.user.gistComments.totalCount
-                                        + res.data.data.user.commitComments.totalCount;
+                                        + res.data.data.user.commitComments.totalCount);
+                        this.npmDownloadCount = printInt(res.data.npmDownloads);
                         this.loadSec = ((Date.now() - fetchAt) / 1000).toFixed(2);
                     });
                 }
