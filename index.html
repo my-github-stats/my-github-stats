@@ -198,6 +198,12 @@
                         this.loadingState = 'NONE';
                         this.resultsLoaded = true;
                         this.loadSec = ((Date.now() - fetchAt) / 1000).toFixed(2);
+                    }).catch(() => {
+                        this.loadingState = 'ERROR';
+                        setTimeout(() => {
+                            this.loadingState = 'NONE';
+                        }, 2000);
+                        return;
                     });
                 }
             }
