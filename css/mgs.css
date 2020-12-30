@@ -43,3 +43,8 @@ body, html {
 input {
     width: 100%;
 }
+
+.errored {
+    color: white;
+    background-color: #FF4136;
+}

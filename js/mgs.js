@@ -14,7 +14,7 @@ function getPathFromUrl(url) {
 }
 
 function getAPIURL () {
-    const dev = false;
+    const dev = !window.location.href.includes('https://');
     const url = dev ? 'http://localhost:3666/stats' : 'https://my-gh-stats.androz2091.fr/stats';
     return url;
 }

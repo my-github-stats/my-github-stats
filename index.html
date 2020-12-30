@@ -17,7 +17,7 @@
                             <input v-model="userSearch" type="text" placeholder="GitHub username" />
                         </div>
                         <div class="col-4">
-                            <button v-on:click="fetch" :disabled="loading" :class="getBtnClass">{{ buttonContent }}</button>
+                            <button v-on:click="fetch" :disabled="loadingState === 'WAITING'" :class="getBtnClass">{{ buttonContent }}</button>
                         </div>
                     </div>
                 </div>
@@ -120,15 +120,28 @@
                 issues: '0',
                 releases: '0',
                 npmDownloadCount: '0',
-                loading: false,
+                loadingState: 'NONE',
                 loadSec: '0'
             },
             computed: {
                 buttonContent () {
-                    return this.loading ? 'Loading...' : 'Get Stats';
+                    switch(this.loadingState){
+                        case 'NONE':
+                            return 'Get State';
+                            break;
+                        case 'WAITING':
+                            return 'Loading...';
+                            break;
+                        case 'NOTFOUND':
+                            return 'User not found';
+                            break;
+                        case 'ERROR':
+                            return 'Error occurred';
+                            break;
+                    }
                 },
                 getBtnClass () {
-                    return this.loading ? 'active' : '';
+                    return this.loadingState === 'WAITING' ? 'active' : (this.loadingState === 'ERROR' || this.loadingState === 'NOTFOUND') ? 'errored' : '';
                 },
                 showNpmDownloadCount () {
                     return parseInt(this.npmDownloadCount.replace(/,/g, '')) > 0;
@@ -151,24 +164,39 @@
             },
             methods: {
                 fetch () {
-                    this.loading = true;
+                    this.loadingState = 'WAITING';
                     const fetchAt = Date.now();
                     axios.get(`${getAPIURL()}/${this.userSearch}`).then((res) => {
-                        this.user = res.data.data.user.login;
-                        this.loading = false;
-                        this.resultsLoaded = true;
+                        if (res.data.error) {
+                            this.loadingState = 'NOTFOUND';
+                            setTimeout(() => {
+                                this.loadingState = 'NONE';
+                            }, 2000);
+                            return;
+                        }
                         const printInt = (int) => int.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                        this.stars = printInt(res.data.data.repos.edges.map((e) => e.node.stargazers.totalCount).reduce((p, c) => p + c));
-                        this.forks = printInt(res.data.data.repos.edges.map((e) => e.node.forks.totalCount).reduce((p, c) => p + c));
-                        this.issues = printInt(res.data.data.repos.edges.map((e) => e.node.issues.totalCount).reduce((p, c) => p + c));
-                        this.releases =printInt(res.data.data.repos.edges.map((e) => e.node.releases.totalCount).reduce((p, c) => p + c));
-                        this.followers = printInt(res.data.data.user.followers.totalCount);
-                        this.languageCount = [...new Set(res.data.data.repos.edges.map((e) => e.node.primaryLanguage ? e.node.primaryLanguage.name : null))].length;
-                        this.pr = printInt(res.data.data.user.pullRequests.totalCount);
-                        this.comments = printInt(res.data.data.user.issueComments.totalCount
-                                        + res.data.data.user.gistComments.totalCount
-                                        + res.data.data.user.commitComments.totalCount);
-                        this.npmDownloadCount = printInt(res.data.npmDownloads);
+                        try {
+                            this.stars = printInt(res.data.data.repos.edges.map((e) => e.node.stargazers.totalCount).reduce((p, c) => p + c));
+                            this.forks = printInt(res.data.data.repos.edges.map((e) => e.node.forks.totalCount).reduce((p, c) => p + c));
+                            this.issues = printInt(res.data.data.repos.edges.map((e) => e.node.issues.totalCount).reduce((p, c) => p + c));
+                            this.releases =printInt(res.data.data.repos.edges.map((e) => e.node.releases.totalCount).reduce((p, c) => p + c));
+                            this.followers = printInt(res.data.data.user.followers.totalCount);
+                            this.languageCount = [...new Set(res.data.data.repos.edges.map((e) => e.node.primaryLanguage ? e.node.primaryLanguage.name : null))].length;
+                            this.pr = printInt(res.data.data.user.pullRequests.totalCount);
+                            this.comments = printInt(res.data.data.user.issueComments.totalCount
+                                            + res.data.data.user.gistComments.totalCount
+                                            + res.data.data.user.commitComments.totalCount);
+                            this.npmDownloadCount = printInt(res.data.npmDownloads);
+                        } catch {
+                            this.loadingState = 'ERROR';
+                            setTimeout(() => {
+                                this.loadingState = 'NONE';
+                            }, 2000);
+                            return;
+                        }
+                        this.user = res.data.data.user.login;
+                        this.loadingState = 'NONE';
+                        this.resultsLoaded = true;
                         this.loadSec = ((Date.now() - fetchAt) / 1000).toFixed(2);
                     });
                 }
