@@ -111,17 +111,17 @@
                 resultsLoaded: false,
                 userSearch: '',
                 user: null,
-                followers: 0,
-                languageCount: 0,
-                pr: 0,
-                comments: 0,
-                stars: 0,
-                forks: 0,
-                issues: 0,
-                releases: 0,
-                npmDownloadCount: 0,
+                followers: '0',
+                languageCount: '0',
+                pr: '0',
+                comments: '0',
+                stars: '0',
+                forks: '0',
+                issues: '0',
+                releases: '0',
+                npmDownloadCount: '0',
                 loading: false,
-                loadSec: 0
+                loadSec: '0'
             },
             computed: {
                 buttonContent () {
@@ -131,7 +131,7 @@
                     return this.loading ? 'active' : '';
                 },
                 showNpmDownloadCount () {
-                    return this.npmDownloadCount > 0;
+                    return parseInt(this.npmDownloadCount.replace(/,/g, '')) > 0;
                 }
             },
             mounted () {
