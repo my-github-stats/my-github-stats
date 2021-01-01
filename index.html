@@ -125,20 +125,13 @@
             },
             computed: {
                 buttonContent () {
-                    switch(this.loadingState){
-                        case 'NONE':
-                            return 'Get Stats';
-                            break;
-                        case 'WAITING':
-                            return 'Loading...';
-                            break;
-                        case 'NOTFOUND':
-                            return 'User not found';
-                            break;
-                        case 'ERROR':
-                            return 'Error occurred';
-                            break;
-                    }
+                    const errors = {
+                         'NONE': 'Get Stats',
+                         'WAITING': 'Loading...',
+                         'NOTFOUND': 'User not found', 
+                         'ERROR': 'Error occurred' 
+                    };
+                    return errors[this.loadingState];
                 },
                 getBtnClass () {
                     return this.loadingState === 'WAITING' ? 'active' : (this.loadingState === 'ERROR' || this.loadingState === 'NOTFOUND') ? 'errored' : '';
